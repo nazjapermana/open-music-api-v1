@@ -3,7 +3,6 @@ const { Pool } = require("pg");
 const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
 const { AlbumModel } = require("../../utils/albums");
-const { SongModel } = require("../../utils/songs");
 
 class AlbumsService {
   constructor() {
@@ -76,11 +75,7 @@ class AlbumsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
-      return [];
-    }
-
-    return result.rows.map(SongModel);
+    return result.rows;
   }
 }
 
