@@ -68,6 +68,15 @@ class PlaylistsHandler {
       owner: credentialId,
     });
 
+    console.log("berhasil nambah song");
+
+    await this._service.addActivityPlaylist({
+      playlistId,
+      songId,
+      userId: credentialId,
+      action: "add",
+    });
+
     const response = h.response({
       status: "success",
       message: "Lagu berhasil ditambahkan ke playlist",
@@ -103,9 +112,32 @@ class PlaylistsHandler {
     await this._service.verifyPlaylistSongOwner(id, credentialId);
     await this._service.deleteSongFromPlaylist(id, songId);
 
+    await this._service.addActivityPlaylist({
+      playlistId: id,
+      songId,
+      userId: credentialId,
+      action: "delete",
+    });
+
     return {
       status: "success",
       message: "Lagu berhasil dihapus",
+    };
+  }
+
+  async getPlaylistActivitiesHandler(request) {
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    await this._service.verifyPlaylistSongOwner(id, credentialId);
+    const activities = await this._service.getActivityPlaylists(id);
+
+    return {
+      status: "success",
+      data: {
+        playlistId: id,
+        activities,
+      },
     };
   }
 }

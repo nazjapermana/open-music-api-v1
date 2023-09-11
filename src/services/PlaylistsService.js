@@ -120,6 +120,41 @@ class PlaylistsService {
       throw new AuthorizationsError("Anda tidak berhak mengakses resource ini");
     }
   }
+
+  async addActivityPlaylist({ playlistId, songId, userId, action }) {
+    console.log("masuk add activity");
+    const id = `activities-${nanoid(16)}`;
+    const time = new Date().toISOString();
+    console.log(playlistId);
+    console.log(songId);
+    console.log(userId);
+    console.log(action);
+
+    const query = {
+      text: "INSERT INTO playlist_activities VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
+      values: [id, action, time, playlistId, songId, userId],
+    };
+
+    const result = await this._pool.query(query);
+    console.log("berhasil tambah aktifitas");
+    console.log(result.rows);
+    if (!result.rows[0].id) {
+      throw new InvariantError("Gagal menambahkan aktivitas playlist");
+    }
+  }
+
+  async getActivityPlaylists(playlistId) {
+    const query = {
+      text: `SELECT users.username, songs.title, playlist_activities.action, playlist_activities.time FROM playlist_activities
+      LEFT JOIN users ON users.id = playlist_activities.user_id
+      LEFT JOIN songs ON songs.id = playlist_activities.song_id
+      WHERE playlist_id = $1`,
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
+  }
 }
 
 module.exports = PlaylistsService;
